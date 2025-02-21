@@ -3,6 +3,7 @@ import { join } from "node:path";
 import database from "infra/database";
 
 export default async function status(req, res) {
+  console.log("Request Method: ", req.method);
   const dbClient = await database.getNewClient();
   const defaultMigrationOptions = {
     dbClient,
