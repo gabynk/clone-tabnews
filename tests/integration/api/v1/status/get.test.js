@@ -1,4 +1,10 @@
+import orchestrator from "tests/orchestrator.js";
+
 describe("Status - GET", () => {
+  beforeAll(async () => {
+    await orchestrator.waitForAllServices();
+  });
+
   it("should be GET to /api/v1/status and return 200", async () => {
     const resp = await fetch("http://localhost:3000/api/v1/status");
     expect(resp.status).toBe(200);
