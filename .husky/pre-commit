@@ -1,0 +1,5 @@
+echo "Verificando por secrets no commit com Secretlint..."
+
+npx secretlint "**/*.{js,jsx,json}" --secretlintignore .gitignore
+
+echo "Nenhum segredo encontrado. Continuando o commit..."
