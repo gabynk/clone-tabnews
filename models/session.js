@@ -5,10 +5,10 @@ import { UnauthorizedError } from "infra/errors";
 const EXPIRATION_IN_MILLISECONDS = 60 * 60 * 24 * 30 * 1000; // 30 Days
 
 async function findOneValidByToken(sessionToken) {
-  const session = await runInsertQuery(sessionToken);
+  const session = await runSelectQuery(sessionToken);
   return session;
 
-  async function runInsertQuery(sessionToken) {
+  async function runSelectQuery(sessionToken) {
     const result = await database.query({
       text: `
         SELECT
@@ -59,10 +59,10 @@ async function create(userId) {
 
 async function renew(sessionId) {
   const expiresAt = new Date(Date.now() + EXPIRATION_IN_MILLISECONDS);
-  const renewedSessionObject = await runInsertQuery(sessionId, expiresAt);
+  const renewedSessionObject = await runUpdateQuery(sessionId, expiresAt);
   return renewedSessionObject;
 
-  async function runInsertQuery(sessionId, expiresAt) {
+  async function runUpdateQuery(sessionId, expiresAt) {
     const result = await database.query({
       text: `
         UPDATE
@@ -81,10 +81,35 @@ async function renew(sessionId) {
   }
 }
 
+async function expireById(sessionId) {
+  const expiredSessionObject = await runUpdateQuery(sessionId);
+  return expiredSessionObject;
+
+  async function runUpdateQuery(sessionId) {
+    const results = await database.query({
+      text: `
+        UPDATE
+          sessions
+        SET
+          expires_at = expires_at - interval '1 year',
+          updated_at = NOW()
+        WHERE
+          id = $1
+        RETURNING
+          *
+        ;`,
+      values: [sessionId],
+    });
+
+    return results.rows[0];
+  }
+}
+
 const session = {
   findOneValidByToken,
   create,
   renew,
+  expireById,
   EXPIRATION_IN_MILLISECONDS,
 };
 
