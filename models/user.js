@@ -2,6 +2,35 @@ import database from "infra/database";
 import password from "models/password";
 import { NotFoundError, ValidationError } from "infra/errors";
 
+async function findOneById(id) {
+  const user = await runSelectQuery(id);
+  return user;
+
+  async function runSelectQuery(id) {
+    const result = await database.query({
+      text: `
+        SELECT  
+          *
+        FROM
+          users
+        WHERE
+          id = $1
+        LIMIT
+          1
+        ;`,
+      values: [id],
+    });
+
+    if (result.rowCount <= 0) {
+      throw new NotFoundError({
+        message: "O id informado não foi encontrado no sistema.",
+        action: "Verifique se o id está digitado corretamente.",
+      });
+    }
+    return result.rows[0];
+  }
+}
+
 async function findOneByEmail(email) {
   const user = await runSelectQuery(email);
   return user;
@@ -186,9 +215,10 @@ async function update(username, userInputValues) {
 }
 
 const user = {
-  create,
+  findOneById,
   findOneByEmail,
   findOneByUsername,
+  create,
   update,
 };
 
