@@ -25,7 +25,7 @@ describe("GET /api/v1/users/[username]", () => {
         username: "MesmoCase",
         email: respGetBody.email,
         password: respGetBody.password,
-        features: [],
+        features: ["read:activation_token"],
         created_at: respGetBody.created_at,
         updated_at: respGetBody.updated_at,
       });
@@ -50,7 +50,7 @@ describe("GET /api/v1/users/[username]", () => {
         username: "CaseDiferente",
         email: respGetBody.email,
         password: respGetBody.password,
-        features: [],
+        features: ["read:activation_token"],
         created_at: respGetBody.created_at,
         updated_at: respGetBody.updated_at,
       });

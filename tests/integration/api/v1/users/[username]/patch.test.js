@@ -34,7 +34,7 @@ describe("PATCH /api/v1/users/[username]", () => {
         username: "uniqueUser2",
         email: respBody.email,
         password: respBody.password,
-        features: [],
+        features: ["read:activation_token"],
         created_at: respBody.created_at,
         updated_at: respBody.updated_at,
       });
@@ -67,7 +67,7 @@ describe("PATCH /api/v1/users/[username]", () => {
         username: respBody.username,
         email: "uniqueEmail2@curso.dev",
         password: respBody.password,
-        features: [],
+        features: ["read:activation_token"],
         created_at: respBody.created_at,
         updated_at: respBody.updated_at,
       });
@@ -100,7 +100,7 @@ describe("PATCH /api/v1/users/[username]", () => {
         username: respBody.username,
         email: respBody.email,
         password: respBody.password,
-        features: [],
+        features: ["read:activation_token"],
         created_at: respBody.created_at,
         updated_at: respBody.updated_at,
       });
@@ -147,7 +147,7 @@ describe("PATCH /api/v1/users/[username]", () => {
         username: "equalityuser",
         email: respBody.email,
         password: respBody.password,
-        features: [],
+        features: ["read:activation_token"],
         created_at: respBody.created_at,
         updated_at: respBody.updated_at,
       });
