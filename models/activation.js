@@ -4,6 +4,45 @@ import webserver from "infra/webserver";
 
 const EXPIRATION_IN_MILLISECONDS = 60 * 15 * 1000; // 15 min
 
+async function findOneValidById(token) {
+  const activationToken = await runSelectQuery(token);
+  return activationToken;
+
+  async function runSelectQuery(token) {
+    const result = await database.query({
+      text: `
+        SELECT
+          * 
+        FROM
+          user_activation_tokens
+        WHERE
+          id = $1
+        AND used_at IS NULL
+        AND expires_at > NOW()
+        LIMIT
+          1
+        ;`,
+      values: [token],
+    });
+
+    return result.rows[0];
+  }
+}
+
+async function sendEmailToUser(user, activationToken) {
+  await email.send({
+    from: "EstudosTab <contato@estudostab.com.br>",
+    to: user.email,
+    subject: "Ative seu cadastro no EstudosTab!",
+    text: `${user.username}, clique no link abaixo para ativar seu cadastro: 
+
+${webserver.origin}/cadastro/ativar/${activationToken.id}
+    
+Atenciosamente,
+Equipe EstudosTab`,
+  });
+}
+
 async function create(userId) {
   const expiresAt = new Date(Date.now() + EXPIRATION_IN_MILLISECONDS);
 
@@ -27,47 +66,10 @@ async function create(userId) {
   }
 }
 
-async function findOneByUserId(userId) {
-  const activationToken = await runSelectQuery(userId);
-  return activationToken;
-
-  async function runSelectQuery(userId) {
-    const result = await database.query({
-      text: `
-        SELECT
-          * 
-        FROM
-          user_activation_tokens
-        WHERE
-          user_id = $1
-        LIMIT
-          1
-        ;`,
-      values: [userId],
-    });
-
-    return result.rows[0];
-  }
-}
-
-async function sendEmailToUser(user, activationToken) {
-  await email.send({
-    from: "EstudosTab <contato@estudostab.com.br>",
-    to: user.email,
-    subject: "Ative seu cadastro no EstudosTab!",
-    text: `${user.username}, clique no link abaixo para ativar seu cadastro: 
-
-${webserver.origin}/cadastro/ativar/${activationToken.id}
-    
-Atenciosamente,
-Equipe EstudosTab`,
-  });
-}
-
 const activation = {
-  create,
-  findOneByUserId,
+  findOneValidById,
   sendEmailToUser,
+  create,
 };
 
 export default activation;
