@@ -1,6 +1,7 @@
-import database from "infra/database";
-import email from "infra/email";
-import webserver from "infra/webserver";
+import database from "infra/database.js";
+import email from "infra/email.js";
+import webserver from "infra/webserver.js";
+import user from "./user.js";
 
 const EXPIRATION_IN_MILLISECONDS = 60 * 15 * 1000; // 15 min
 
@@ -43,6 +44,35 @@ Equipe EstudosTab`,
   });
 }
 
+async function markTokenAsUsed(tokenId) {
+  const usedActivationToken = await runUpdateQuery(tokenId);
+  return usedActivationToken;
+
+  async function runUpdateQuery(tokenId) {
+    const result = await database.query({
+      text: `
+        UPDATE 
+          user_activation_tokens
+        SET
+          used_at = timezone('utc', now()),
+          updated_at = timezone('utc', now())
+        WHERE
+          id = $1
+        RETURNING
+          *
+        ;`,
+      values: [tokenId],
+    });
+
+    return result.rows[0];
+  }
+}
+
+async function activateUserByUserId(userId) {
+  const activatedUser = await user.setFeatures(userId, ["create:session"]);
+  return activatedUser;
+}
+
 async function create(userId) {
   const expiresAt = new Date(Date.now() + EXPIRATION_IN_MILLISECONDS);
 
@@ -69,6 +99,8 @@ async function create(userId) {
 const activation = {
   findOneValidById,
   sendEmailToUser,
+  markTokenAsUsed,
+  activateUserByUserId,
   create,
 };
 
